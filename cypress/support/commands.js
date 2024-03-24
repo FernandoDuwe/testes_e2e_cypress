@@ -40,3 +40,25 @@ Cypress.Commands.add('fillSignupFormAndSubmit', (email, password) => {
 		cy.wait('@getNotes')
 	})
 })
+
+Cypress.Commands.add('guiLogin', (email, password) => {
+	cy.intercept('GET', '**/notes').as('getNotes')
+
+	cy.visit('/login')
+	cy.get('#email').type(email)
+	cy.get('#password').type(password, { log: false })
+	cy.contains('button', 'Login').click()
+	cy.wait('@getNotes')
+
+	cy.contains('h1', 'Your Notes').should('be.visible')
+	cy.contains('a', 'Create a new note').should('be.visible')
+})
+
+// Comando para efetaur o login e guardar a sessão atual
+Cypress.Commands.add('sessionLogin', (
+	username = Cypress.env('USER_EMAIL'),
+	password = Cypress.env('USER_PASSWORD')
+) => {
+	const login = () => cy.guiLogin(username, password)
+	cy.session(username, login)
+})
